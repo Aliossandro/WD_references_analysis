@@ -153,13 +153,13 @@ class test:
         precision = precision_score(expected, predicted, average='weighted', pos_label=1)
         recall = recall_score(expected, predicted, average='weighted', pos_label=1)
         f1 = f1_score(expected, predicted, average='weighted', pos_label=1)
-        roc = roc_auc_score(expected, predicted, average='weighted')
+        auc_pr = average_precision_score(expected, predicted, average='weighted')
         mcc = matthews_corrcoef(expected, predicted)
 
-        print "Baseline precision:" + str(precision) + "; recall:" + str(recall) + "; f1:" + str(f1) + "; roc:" + str(roc) + "; mcc:" + str(mcc)
+        print "Baseline precision:" + str(precision) + "; recall:" + str(recall) + "; f1:" + str(f1) + "; auc_pr:" + str(auc_pr) + "; mcc:" + str(mcc)
         file_name = 'baseline_results_' + str(prediction_column) + '.csv'
         with open(file_name, 'w') as f:
-            f.write("Baseline precision:" + str(precision) + "; recall:" + str(recall) + "; f1:" + str(f1) + "; roc:" + str(roc) + "; mcc:" + str(mcc))
+            f.write("Baseline precision:" + str(precision) + "; recall:" + str(recall) + "; f1:" + str(f1) + "; auc_pr:" + str(auc_pr) + "; mcc:" + str(mcc))
 
 
 
@@ -190,13 +190,13 @@ class test:
         precision = precision_score(expected, predicted, average='weighted', pos_label=1)
         recall = recall_score(expected, predicted, average='weighted', pos_label=1)
         f1 = f1_score(expected, predicted, average='weighted', pos_label=1)
-        roc = roc_auc_score(expected, predicted, average='weighted')
+        auc_pr = average_precision_score(expected, predicted, average='weighted')
         mcc = matthews_corrcoef(expected, predicted)
 
-        print "SVM model precision:" + str(precision) + "; recall:" + str(recall) + "; f1:" + str(f1) + "; roc:" + str(roc) + "; mcc:" + str(mcc)
+        print "SVM model precision:" + str(precision) + "; recall:" + str(recall) + "; f1:" + str(f1) + "; auc_pr:" + str(auc_pr) + "; mcc:" + str(mcc)
         file_name = 'svm_results_' + label_type + '.csv'
         with open(file_name, 'w') as f:
-            f.write("SVM model precision:" + str(precision) + "; recall:" + str(recall) + "; f1:" + str(f1) + "; roc:" + str(roc) + "; mcc:" + str(mcc))
+            f.write("SVM model precision:" + str(precision) + "; recall:" + str(recall) + "; f1:" + str(f1) + "; auc_pr:" + str(auc_pr) + "; mcc:" + str(mcc))
 
     ###RF cross validation
     def svm_model_cv(prediction_column):
@@ -221,7 +221,7 @@ class test:
         precision_list = []
         recall_list = []
         f1_list = []
-        roc_list = []
+        auc_pr_list = []
         mcc_list = []
         true_positive_list = []
         false_positive_list = []
@@ -249,17 +249,17 @@ class test:
             recall_list.append(recall)
             f1 = f1_score(expected, predicted, average='weighted', pos_label=1)
             f1_list.append(f1)
-            roc = roc_auc_score(expected, predicted, average='weighted')
-            roc_list.append(roc)
+            auc_pr = average_precision_score(expected, predicted, average='weighted')
+            auc_pr_list.append(auc_pr)
             mcc = matthews_corrcoef(expected, predicted)
             mcc_list.append(mcc)
 
         f1_new = f1_compute(true_positive_list, false_positive_list, false_negative_list)
 
-        print "SVM CV model precision:" + str(mean(precision_list)) + "; recall:" + str(mean(recall_list)) + "; f1:" + str(mean(f1_list)) + "; roc:" + str(mean(roc_list)) + "; mcc:" + str(mean(mcc_list)) + "; f1_new:" + str(f1_new)
+        print "SVM CV model precision:" + str(mean(precision_list)) + "; recall:" + str(mean(recall_list)) + "; f1:" + str(mean(f1_list)) + "; auc_pr:" + str(mean(auc_pr_list)) + "; mcc:" + str(mean(mcc_list)) + "; f1_new:" + str(f1_new)
         file_name = 'svm_cv_results_' + label_type + '.csv'
         with open(file_name, 'w') as f:
-            f.write("SVM cv model precision:" + str(mean(precision_list)) + "; recall:" + str(mean(recall_list)) + "; f1:" + str(mean(f1_list)) + "; roc:" + str(mean(roc_list)) + "; mcc:" + str(mean(mcc_list)) + "; f1_new:" + str(f1_new))
+            f.write("SVM cv model precision:" + str(mean(precision_list)) + "; recall:" + str(mean(recall_list)) + "; f1:" + str(mean(f1_list)) + "; auc_pr:" + str(mean(auc_pr_list)) + "; mcc:" + str(mean(mcc_list)) + "; f1_new:" + str(f1_new))
 
     ###linear SVM
     def linear_svm(prediction_column):
@@ -287,15 +287,15 @@ class test:
         precision = precision_score(expected, predicted, average='weighted', pos_label=1)
         recall = recall_score(expected, predicted, average='weighted', pos_label=1)
         f1 = f1_score(expected, predicted, average='weighted', pos_label=1)
-        roc = roc_auc_score(expected, predicted, average='weighted')
+        auc_pr = average_precision_score(expected, predicted, average='weighted')
         mcc = matthews_corrcoef(expected, predicted)
 
         print "Linear SVM model precision:" + str(precision) + "; recall:" + str(recall) + "; f1:" + str(
-            f1) + "; roc:" + str(roc) + "; mcc:" + str(mcc)
+            f1) + "; auc_pr:" + str(auc_pr) + "; mcc:" + str(mcc)
         file_name = 'linear_svm_results_' + label_type + '.csv'
         with open(file_name, 'w') as f:
             f.write("Linear SVM model precision:" + str(precision) + "; recall:" + str(recall) + "; f1:" + str(
-                f1) + "; roc:" + str(roc) + "; mcc:" + str(mcc))
+                f1) + "; auc_pr:" + str(auc_pr) + "; mcc:" + str(mcc))
 
     def linear_svm_cv(prediction_column):
         print 'you chose linear SVM cross_validation'
@@ -315,7 +315,7 @@ class test:
         precision_list = []
         recall_list = []
         f1_list = []
-        roc_list = []
+        auc_pr_list = []
         mcc_list = []
         true_positive_list = []
         false_positive_list = []
@@ -343,20 +343,20 @@ class test:
             recall_list.append(recall)
             f1 = f1_score(expected, predicted, average='weighted', pos_label=1)
             f1_list.append(f1)
-            roc = roc_auc_score(expected, predicted, average='weighted')
-            roc_list.append(roc)
+            auc_pr = average_precision_score(expected, predicted, average='weighted')
+            auc_pr_list.append(auc_pr)
             mcc = matthews_corrcoef(expected, predicted)
             mcc_list.append(mcc)
 
         f1_new = f1_compute(true_positive_list, false_positive_list, false_negative_list)
 
         print "Linear SVM CV model precision:" + str(mean(precision_list)) + "; recall:" + str(
-            mean(recall_list)) + "; f1:" + str(mean(f1_list)) + "; roc:" + str(mean(roc_list)) + "; mcc:" + str(
+            mean(recall_list)) + "; f1:" + str(mean(f1_list)) + "; auc_pr:" + str(mean(auc_pr_list)) + "; mcc:" + str(
             mean(mcc_list)) + "; f1_new:" + str(f1_new)
         file_name = 'linear_svm_cv_results_' + label_type + '.csv'
         with open(file_name, 'w') as f:
             f.write("Linear SVM cv model precision:" + str(mean(precision_list)) + "; recall:" + str(
-                mean(recall_list)) + "; f1:" + str(mean(f1_list)) + "; roc:" + str(mean(roc_list)) + "; mcc:" + str(
+                mean(recall_list)) + "; f1:" + str(mean(f1_list)) + "; auc_pr:" + str(mean(auc_pr_list)) + "; mcc:" + str(
                 mean(mcc_list)) + "; f1_new:" + str(f1_new))
 
     ###RF
@@ -381,13 +381,13 @@ class test:
         precision = precision_score(expected, predicted, average='weighted', pos_label=1)
         recall = recall_score(expected, predicted, average='weighted', pos_label=1)
         f1 = f1_score(expected, predicted, average='weighted', pos_label=1)
-        roc = roc_auc_score(expected, predicted, average='weighted')
+        auc_pr = average_precision_score(expected, predicted, average='weighted')
         mcc = matthews_corrcoef(expected, predicted)
 
-        print "RF model precision:" + str(precision) + "; recall:" + str(recall) + "; f1:" + str(f1) + "; roc:" + str(roc) + "; mcc:" + str(mcc)
+        print "RF model precision:" + str(precision) + "; recall:" + str(recall) + "; f1:" + str(f1) + "; auc_pr:" + str(auc_pr) + "; mcc:" + str(mcc)
         file_name = 'rf_results_' + label_type + '.csv'
         with open(file_name, 'w') as f:
-            f.write("RF model precision:" + str(precision) + "; recall:" + str(recall) + "; f1:" + str(f1) + "; roc:" + str(roc) + "; mcc:" + str(mcc))
+            f.write("RF model precision:" + str(precision) + "; recall:" + str(recall) + "; f1:" + str(f1) + "; auc_pr:" + str(auc_pr) + "; mcc:" + str(mcc))
 
 
     ###RF cross validation
@@ -406,7 +406,7 @@ class test:
 
         precision_list = []
         recall_list = []
-        roc_list = []
+        auc_pr_list = []
         mcc_list = []
         f1_list = []
         true_positive_list = []
@@ -436,17 +436,17 @@ class test:
             recall_list.append(recall)
             f1 = f1_score(expected, predicted, average='weighted', pos_label=1)
             f1_list.append(f1)
-            roc = roc_auc_score(expected, predicted, average='weighted')
-            roc_list.append(roc)
+            auc_pr = average_precision_score(expected, predicted, average='weighted')
+            auc_pr_list.append(auc_pr)
             mcc = matthews_corrcoef(expected, predicted)
             mcc_list.append(mcc)
 
         f1_new = f1_compute(true_positive_list, false_positive_list, false_negative_list)
 
-        print "RF cv model precision:" + str(mean(precision_list)) + "; recall:" + str(mean(recall_list)) + "; f1:" + str(mean(f1_list)) + "; roc:" + str(mean(roc_list)) + "; mcc:" + str(mean(mcc_list)) + "; f1_new:" + str(f1_new)
+        print "RF cv model precision:" + str(mean(precision_list)) + "; recall:" + str(mean(recall_list)) + "; f1:" + str(mean(f1_list)) + "; auc_pr:" + str(mean(auc_pr_list)) + "; mcc:" + str(mean(mcc_list)) + "; f1_new:" + str(f1_new)
         file_name = 'rf_cv_results_' + label_type + '.csv'
         with open(file_name, 'w') as f:
-            f.write("RF cv model precision:" + str(mean(precision_list)) + "; recall:" + str(mean(recall_list)) + "; f1:" + str(mean(f1_list)) + "; roc:" + str(mean(roc_list)) + "; mcc:" + str(mean(mcc_list)) + "; f1_new:" + str(f1_new))
+            f.write("RF cv model precision:" + str(mean(precision_list)) + "; recall:" + str(mean(recall_list)) + "; f1:" + str(mean(f1_list)) + "; auc_pr:" + str(mean(auc_pr_list)) + "; mcc:" + str(mean(mcc_list)) + "; f1_new:" + str(f1_new))
   
     ###Naive Bayes
     def nb_model(prediction_column):
@@ -473,13 +473,13 @@ class test:
         precision = precision_score(expected, predicted, average='weighted', pos_label=1)
         recall = recall_score(expected, predicted, average='weighted', pos_label=1)
         f1 = f1_score(expected, predicted, average='weighted', pos_label=1)
-        roc = roc_auc_score(expected, predicted, average='weighted')
+        auc_pr = average_precision_score(expected, predicted, average='weighted')
         mcc = matthews_corrcoef(expected, predicted)
 
-        print "NB model precision:" + str(precision) + "; recall:" + str(recall) + "; f1:" + str(f1) + "; roc:" + str(roc) + "; mcc:" + str(mcc)
+        print "NB model precision:" + str(precision) + "; recall:" + str(recall) + "; f1:" + str(f1) + "; auc_pr:" + str(auc_pr) + "; mcc:" + str(mcc)
         file_name = 'NB_results_' + label_type + '.csv'
         with open(file_name, 'w') as f:
-            f.write("NB model precision:" + str(precision) + "; recall:" + str(recall) + "; f1:" + str(f1) + "; roc:" + str(roc) + "; mcc:" + str(mcc))
+            f.write("NB model precision:" + str(precision) + "; recall:" + str(recall) + "; f1:" + str(f1) + "; auc_pr:" + str(auc_pr) + "; mcc:" + str(mcc))
 
 
            
@@ -503,7 +503,7 @@ class test:
         precision_list = []
         recall_list = []
         f1_list = []
-        roc_list = []
+        auc_pr_list = []
         mcc_list = []
         true_positive_list = []
         false_positive_list = []
@@ -531,18 +531,18 @@ class test:
             recall_list.append(recall)
             f1 = f1_score(expected, predicted, average='weighted', pos_label=1)
             f1_list.append(f1)
-            roc = roc_auc_score(expected, predicted, average='weighted')
-            roc_list.append(roc)
+            auc_pr = average_precision_score(expected, predicted, average='weighted')
+            auc_pr_list.append(auc_pr)
             mcc = matthews_corrcoef(expected, predicted)
             mcc_list.append(mcc)
 
         f1_new = f1_compute(true_positive_list, false_positive_list, false_negative_list)
 
 
-        print "NB cv model precision:" + str(mean(precision_list)) + "; recall:" + str(mean(recall_list)) + "; f1:" + str(mean(f1_list)) + "; roc:" + str(mean(roc_list)) + "; mcc:" + str(mean(mcc_list)) + "; f1_new:" + str(f1_new)
+        print "NB cv model precision:" + str(mean(precision_list)) + "; recall:" + str(mean(recall_list)) + "; f1:" + str(mean(f1_list)) + "; auc_pr:" + str(mean(auc_pr_list)) + "; mcc:" + str(mean(mcc_list)) + "; f1_new:" + str(f1_new)
         file_name = 'NB_cv_results_' + label_type + '.csv'
         with open(file_name, 'w') as f:
-            f.write("NB cv model precision:" + str(mean(precision_list)) + "; recall:" + str(mean(recall_list)) + "; f1:" + str(mean(f1_list)) + "; roc:" + str(mean(roc_list)) + "; mcc:" + str(mean(mcc_list)) + "; f1_new:" + str(f1_new))
+            f.write("NB cv model precision:" + str(mean(precision_list)) + "; recall:" + str(mean(recall_list)) + "; f1:" + str(mean(f1_list)) + "; auc_pr:" + str(mean(auc_pr_list)) + "; mcc:" + str(mean(mcc_list)) + "; f1_new:" + str(f1_new))
 
 
     def function_chooser(self, A, prediction_column):

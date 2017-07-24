@@ -28,7 +28,7 @@ from sklearn import preprocessing
 from sklearn.metrics import precision_score
 from sklearn.metrics import recall_score
 from sklearn.metrics import f1_score
-from sklearn.metrics import roc_auc_score
+from sklearn.metrics import average_precision_score
 from sklearn.metrics import matthews_corrcoef
 from sklearn.metrics import roc_curve
 from sklearn.model_selection import train_test_split

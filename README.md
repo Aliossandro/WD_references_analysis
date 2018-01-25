@@ -1,4 +1,4 @@
-# WD_references_analysis
+# WD external references analysis
 Code and datasets extracted for the analysis of Wikidata external references
 
 ### Python and sklearn versions

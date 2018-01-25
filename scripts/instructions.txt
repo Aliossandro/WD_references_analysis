@@ -1,0 +1,5 @@
+###Model trainer instructions
+-Python 2. 
+-Requires pandas, scipy, sklearn.
+
+Run the script and follow the instruction to get prediction scores for relevance and authoritativeness of Wikidata external references.

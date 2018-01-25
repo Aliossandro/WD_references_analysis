@@ -7,19 +7,13 @@ Created on May 1 2017
 
 import os
 import sys
-
 reload(sys)
 sys.setdefaultencoding("utf8")
-# import urllib2
-# from bs4 import BeautifulSoup
+
 import pandas as pd
-# import re, string
-# import ngram
-# import nltk
 import scipy as sp
 import numpy as np
 import chardet
-# import matplotlib.pyplot as plt
 import re
 
 from sklearn.feature_extraction import DictVectorizer
@@ -87,68 +81,70 @@ def f1_compute(tp_list, fp_list, fn_list):
     return f1_score_custom
 
 def dataset_preprocess(prediction_column):
-    train_data =  './prediction_data.csv' #'./prediction_no_census.csv'
+    train_data = os.path.realpath('../results/prediction_data.csv')
+    # train_data = '/Users/alessandro/Documents/WD_references_analysis/results/prediction_data.csv'
+
     posts = pd.read_csv(train_data, sep='\t', header=0)
     # Create vectorizer for function to use
     vectorizer = CountVectorizer(binary=True, ngram_range=(1, 2))
     vec = DictVectorizer()
-    # y = posts["user_edits"].values.astype(np.float32)
-
-    # X_data = vec.fit_transform(posts[['ref_value', 'ref_domain', 'stat_property', 'stat_value', 'item_id', 'user_type', 'user_edits', 'user_ref_edits', 'ref_count', 'domain_count']].to_dict(orient = 'records')).toarray()
     X_data = sp.sparse.hstack((vectorizer.fit_transform(posts.item_text_clean), vectorizer.fit_transform(posts.object_text), vec.fit_transform(posts[['stat_property', 'user_type', 'code_2',  'instance_of', 'subclass', 'object_instance_of', 'object_subclass', 'property_instance_of']].to_dict(orient='records')).toarray(),posts[['user_edits', 'user_ref_edits_pc', 'ref_count', 'domain_count']].values),format='csr')
-    # X_data = vectorizer.fit_transform(posts.item_text)
-    # X_columns=vectorizer.get_feature_names()+vec.get_feature_names()+posts[['user_edits', 'user_ref_edits', 'ref_count', 'domain_count']].columns.tolist()
-    # X_data = pd.get_dummies(posts[['subclass']])
 
-    prediction_column = raw_input('authoritative or support_object:\n')
-    # X_train, X_test, y_train, y_test = train_test_split(posts[['user_edits', 'user_ref_edits', 'ref_count', 'domain_count']].values, posts[prediction_column], test_size=0.3,random_state=47)
+
+    # prediction_column = raw_input('Typeauthoritative or support_object:\n')
     X_train, X_test, y_train, y_test = train_test_split(X_data, posts[prediction_column], test_size=0.3, random_state=53)
 
     return X_train, X_test, y_train, y_test
 
 def dataset_preprocess_cv(prediction_column):
-    train_data = './prediction_data.csv' #'./prediction_no_census.csv'
+    train_data = os.path.realpath('../results/prediction_data.csv')
+    # train_data = '/Users/alessandro/Documents/WD_references_analysis/results/prediction_data.csv'
+
     posts = pd.read_csv(train_data, sep='\t', header=0)
     # Create vectorizer for function to use
     vectorizer = CountVectorizer(binary=True, ngram_range=(1, 2))
     vec = DictVectorizer()
-    # y = posts["user_edits"].values.astype(np.float32)
 
-    # X_data = vec.fit_transform(posts[['ref_value', 'ref_domain']].to_dict(orient = 'records')).toarray()
     X_data = sp.sparse.hstack((vectorizer.fit_transform(posts.item_text_clean), vectorizer.fit_transform(posts.object_text), vec.fit_transform(posts[['stat_property', 'stat_value', 'user_type',  'instance_of', 'subclass', 'object_instance_of', 'object_subclass', 'property_instance_of']].to_dict(orient='records')).toarray(),posts[['user_edits', 'user_ref_edits_pc', 'ref_count', 'domain_count']].values),format='csr')
-    # X_data = vectorizer.fit_transform(posts.item_text)
-    # X_columns=vectorizer.get_feature_names()+vec.get_feature_names()+posts[['user_edits', 'user_ref_edits', 'ref_count', 'domain_count']].columns.tolist()
-    # X_data = pd.get_dummies(posts[['stat_property', 'stat_value', 'user_type', 'code_2', 'instance_of', 'subclass','object_instance_of', 'object_subclass', 'property_instance_of']])
-    prediction_column = raw_input('authoritative or support_object:\n')
-    # X_train, X_test, y_train, y_test = train_test_split(posts[['user_edits', 'user_ref_edits', 'ref_count', 'domain_count']].values, posts[prediction_column], test_size=0.3,random_state=47)
-    #X_train, X_test, y_train, y_test = train_test_split(X_data, posts[prediction_column], test_size=0.3,random_state=53)
     y = posts[prediction_column]
 
     return X_data, y
 
 
-###split train test
-# X_train, X_test = train_test_split(posts,  test_size=0.33, random_state=42)
-class test:
+### Model training
+class modelTrainer(object):
 
-    def __init__(self, means=None):
-        self.means = means
+    def __init__(self):
+        values = {'authoritativeness': "authoritative",
+                  'relevance': "support_object"}
+        models = {'baseline': self.baseline, 'svm_model': self.svm_model, 'svm_model_cv': self.svm_model_cv,
+                  'linear_svm': self.linear_svm, 'linear_svm_cv': self.linear_svm_cv,
+                  'rf_model': self.rf_model, 'rf_model_cv': self.rf_model_cv,
+                  'nb_model': self.nb_model, 'nb_model_cv': self.nb_model_cv}
+        self.means = raw_input("Which model do you want to train? "
+                               "(Choices: 'baseline', 'svm_model', 'svm_model_cv', 'rf_model', rf_model_cv', 'nb_model', 'nb_model_cv', 'all_cv')\n")
+        prediction_col = raw_input("Please choose the attribute you want to evaluate ('authoritativeness' or 'relevance'):")
+        self.prediction_column = values[prediction_col]
+        if self.means != 'all_cv':
+            models[self.means]()
+        else:
+            self.baseline()
+            self.nb_model_cv()
+            self.rf_model_cv()
+            self.svm_model_cv()
 
-
-    def baseline(prediction_column):
-        train_data = './prediction_data.csv' 
+    def baseline(self):
+        # train_data = '/Users/alessandro/Documents/WD_references_analysis/results/prediction_data.csv'
+        train_data = os.path.realpath('../results/prediction_data.csv')
         posts = pd.read_csv(train_data, sep='\t', header=0)
 
-        prediction_column = raw_input("authority_baseline or relevance_match?\n")
+        if self.prediction_column == 'authoritative':
+            predicted = posts['authoritative_baseline']
+            expected = posts['authoritative']
+        elif self.prediction_column == 'support_object':
+            predicted = posts['statement_match']
+            expected = posts['support_object']
 
-        if prediction_column == 'authority_baseline':
-            expected_column = 'authoritative'
-        elif prediction_column == 'relevance_match':
-            prediction_column = 'statement_match'
-            expected_column = 'support_object'
-
-        predicted = posts[prediction_column]
-        expected = posts[expected_column]
 
         precision = precision_score(expected, predicted, average='weighted', pos_label=1)
         recall = recall_score(expected, predicted, average='weighted', pos_label=1)
@@ -156,29 +152,28 @@ class test:
         auc_pr = average_precision_score(expected, predicted, average='weighted')
         mcc = matthews_corrcoef(expected, predicted)
 
-        print "Baseline precision:" + str(precision) + "; recall:" + str(recall) + "; f1:" + str(f1) + "; auc_pr:" + str(auc_pr) + "; mcc:" + str(mcc)
-        file_name = 'baseline_results_' + str(prediction_column) + '.csv'
+        print "Baseline precision:{0}; recall:{1}; f1:{2}; auc_pr:{3}; mcc:{4}".format(str(precision), str(recall),
+                                                                                       str(f1), str(auc_pr), str(mcc))
+        file_name = 'baseline_results_' + str(self.prediction_column) + '.csv'
         with open(file_name, 'w') as f:
             f.write("Baseline precision:" + str(precision) + "; recall:" + str(recall) + "; f1:" + str(f1) + "; auc_pr:" + str(auc_pr) + "; mcc:" + str(mcc))
 
 
 
 
-    def svm_model(prediction_column):
+    def svm_model(self):
         print 'you chose SVM'
-        data = dataset_preprocess(prediction_column)
+        data = dataset_preprocess(self.prediction_column)
         print 'data processed'
 
         X_train = data[0]
         y_train = data[2]
         X_test = data[1]
         y_test = data[3]
-        label_type = str(prediction_column)
+        label_type = str(self.prediction_column)
 
         ###SVM
         from sklearn import svm
-        from sklearn.model_selection import cross_val_score
-        from sklearn.model_selection import KFold
         clf = svm.SVC(kernel='rbf', C=0.4, cache_size=1000, class_weight='balanced').fit(X_train, y_train)
 
 
@@ -199,23 +194,18 @@ class test:
             f.write("SVM model precision:" + str(precision) + "; recall:" + str(recall) + "; f1:" + str(f1) + "; auc_pr:" + str(auc_pr) + "; mcc:" + str(mcc))
 
     ###RF cross validation
-    def svm_model_cv(prediction_column):
+    def svm_model_cv(self):
         print 'you chose SVM cross_validation'
-        data = dataset_preprocess_cv(prediction_column)
+        data = dataset_preprocess_cv(self.prediction_column)
         print 'data processed'
 
         X_train = data[0]
         y_test = data[1]
-        label_type = str(prediction_column)
+        label_type = str(self.prediction_column)
 
         from sklearn import svm
-        #from sklearn.model_selection import cross_val_score
         from sklearn.model_selection import StratifiedKFold
-        clf = svm.SVC(kernel='rbf', C=0.4, cache_size=1000, class_weight='balanced')#.fit(X_train, y_train)
-
-        # crossvalidation = KFold(n_splits=10, shuffle=True, random_state=3)
-        # score_type = raw_input('precision, recall, roc_auc, f1, or matthews_corrcoef:\n')
-        # scores = cross_val_score(clf, X_train, y_test, scoring=score_type, cv=crossvalidation, n_jobs=4)
+        clf = svm.SVC(kernel='rbf', C=0.4, cache_size=1000, class_weight='balanced')
         crossvalidation = StratifiedKFold(n_splits=10, shuffle=True, random_state=None)
 
         precision_list = []
@@ -262,16 +252,16 @@ class test:
             f.write("SVM cv model precision:" + str(mean(precision_list)) + "; recall:" + str(mean(recall_list)) + "; f1:" + str(mean(f1_list)) + "; auc_pr:" + str(mean(auc_pr_list)) + "; mcc:" + str(mean(mcc_list)) + "; f1_new:" + str(f1_new))
 
     ###linear SVM
-    def linear_svm(prediction_column):
+    def linear_svm(self):
         print 'you chose linear SVM'
-        data = dataset_preprocess(prediction_column)
+        data = dataset_preprocess(self.prediction_column)
         print 'data processed'
 
         X_train = data[0]
         y_train = data[2]
         X_test = data[1]
         y_test = data[3]
-        label_type = str(prediction_column)
+        label_type = str(self.prediction_column)
 
         ###SVM
         from sklearn import svm
@@ -297,19 +287,18 @@ class test:
             f.write("Linear SVM model precision:" + str(precision) + "; recall:" + str(recall) + "; f1:" + str(
                 f1) + "; auc_pr:" + str(auc_pr) + "; mcc:" + str(mcc))
 
-    def linear_svm_cv(prediction_column):
+    def linear_svm_cv(self):
         print 'you chose linear SVM cross_validation'
-        data = dataset_preprocess_cv(prediction_column)
+        data = dataset_preprocess_cv(self.prediction_column)
         print 'data processed'
 
         X_train = data[0]
         y_test = data[1]
-        label_type = str(prediction_column)
+        label_type = str(self.prediction_column)
 
         from sklearn import svm
-        # from sklearn.model_selection import cross_val_score
         from sklearn.model_selection import StratifiedKFold
-        clf = svm.LinearSVC(C=0.5, class_weight='balanced')  # .fit(X_train, y_train)
+        clf = svm.LinearSVC(C=0.5, class_weight='balanced')
         crossvalidation = StratifiedKFold(n_splits=10, shuffle=True, random_state=None)
 
         precision_list = []
@@ -360,16 +349,16 @@ class test:
                 mean(mcc_list)) + "; f1_new:" + str(f1_new))
 
     ###RF
-    def rf_model(prediction_column):
+    def rf_model(self):
         print 'you chose RF'
-        data = dataset_preprocess(prediction_column)
+        data = dataset_preprocess(self.prediction_column)
         print 'data processed'
 
         X_train = data[0]
         y_train = data[2]
         X_test = data[1]
         y_test = data[3]
-        label_type = str(prediction_column)
+        label_type = str(self.prediction_column)
 
         from sklearn.ensemble import RandomForestClassifier
         clf = RandomForestClassifier(n_estimators=1000, max_depth=None, min_samples_split=3, random_state=0)
@@ -391,14 +380,14 @@ class test:
 
 
     ###RF cross validation
-    def rf_model_cv(prediction_column):
+    def rf_model_cv(self):
         print 'you chose RF cross_validation'
-        data = dataset_preprocess_cv(prediction_column)
+        data = dataset_preprocess_cv(self.prediction_column)
         print 'data processed'
 
         # X_train = data[0]
         # y_test = data[1]
-        label_type = str(prediction_column)
+        label_type = str(self.prediction_column)
 
         from sklearn.ensemble import RandomForestClassifier
         clf = RandomForestClassifier(n_estimators=1000, max_depth=None, min_samples_split=2, random_state=0)
@@ -449,16 +438,16 @@ class test:
             f.write("RF cv model precision:" + str(mean(precision_list)) + "; recall:" + str(mean(recall_list)) + "; f1:" + str(mean(f1_list)) + "; auc_pr:" + str(mean(auc_pr_list)) + "; mcc:" + str(mean(mcc_list)) + "; f1_new:" + str(f1_new))
   
     ###Naive Bayes
-    def nb_model(prediction_column):
+    def nb_model(self):
         print 'you chose NB'
-        data = dataset_preprocess(prediction_column)
+        data = dataset_preprocess(self.prediction_column)
         print 'data processed'
 
         X_train = data[0]
         y_train = data[2]
         X_test = data[1]
         y_test = data[3]
-        label_type = str(prediction_column)
+        label_type = str(self.prediction_column)
 
         # from sklearn.naive_bayes import GaussianNB
         from sklearn.naive_bayes import BernoulliNB
@@ -484,14 +473,14 @@ class test:
 
            
     ###Naive Bayes cross validation
-    def nb_model_cv(prediction_column):
+    def nb_model_cv(self):
         print 'you chose NB cross_validation'
-        data = dataset_preprocess_cv(prediction_column)
+        data = dataset_preprocess_cv(self.prediction_column)
         print 'data processed'
 
         # X_train = data[0]
         # y_test = data[1]
-        label_type = str(prediction_column)
+        label_type = str(self.prediction_column)
 
         from sklearn.naive_bayes import BernoulliNB
         # gnb = GaussianNB()
@@ -545,30 +534,18 @@ class test:
             f.write("NB cv model precision:" + str(mean(precision_list)) + "; recall:" + str(mean(recall_list)) + "; f1:" + str(mean(f1_list)) + "; auc_pr:" + str(mean(auc_pr_list)) + "; mcc:" + str(mean(mcc_list)) + "; f1_new:" + str(f1_new))
 
 
-    def function_chooser(self, A, prediction_column):
+    # def function_chooser(self):
+    #
+    #     method = getattr(self.means)
+    #     method()
+    #     new_string = 'method called ' + self.means
+    #     print new_string
 
-        method = getattr(self, A, prediction_column)
-        method()
-        new_string = 'method called ' + A
-        print new_string
-
-    def C(self, prediction_column):
-        # train_data = fin
-        # prediction_column = fin_2
-        # label_type = fin_3
-        q = self.function_chooser(self.means, prediction_column)
-        return q
 
 
 def main():
 
-    dataset_file = sys.argv[1]
-    model_type = sys.argv[2]
-
-
-    # dataset = pd.read_csv(dataset_file, sep='\t')
-    p = test(means=model_type)
-    p.C(dataset_file)
+    modelTrainer()
 
 
 

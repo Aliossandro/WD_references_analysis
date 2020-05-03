@@ -3,6 +3,8 @@ import ujson
 import re
 import chardet
 
+from reference_quality_predictor.label_extractor import get_item_label
+
 
 def claim_maker(line):
     try:
@@ -156,3 +158,39 @@ posts['statement_match'] = 1
 posts['statement_match'][(posts['item_match'] > 0) & (posts['object_match'] > 0)] = 0
 
 posts = posts.fillna(value=0)
+
+
+# clean dates
+def clean_dates(date):
+    try:
+        if date.startswith('+'):
+            clean_date = date.replace('0000000', '').replace('T00:00:00Z', '')
+            clean_date = clean_date[9:11] + clean_date[5:8] + '-' + clean_date[1:5]
+            return clean_date
+        else:
+            return date
+    except AttributeError:
+        # tailored for the only case in our dataset
+        return date['sv']['value'].encode('utf-8')
+
+
+def fix_encoding(text):
+    if isinstance(text, str):
+        text = text.decode('utf-8').encode('utf-8')
+        return text
+    elif isinstance(text, dict):
+        return text[text.keys()[0]]['value'].decode('utf-8').encode('utf-8')
+
+    else:
+        return text.decode('utf-8').encode('utf-8')
+
+
+
+# add subject and object labels
+posts['item_label'] = posts['item_id'].apply(lambda x: get_item_label(x))
+
+posts['stat_value_label'] = posts['stat_value'].apply(lambda x: get_item_label(x))
+posts.stat_value_label = posts['stat_value_label'].apply(lambda x: clean_dates(x))
+posts['item_labels'] = posts['item_labels'].apply(lambda x: fix_encoding(x))
+posts['item_labels'] = posts['item_labels'].apply(lambda x: x.replace('"', ''))
+posts.to_csv('results/test_w_domain_final.csv', index=False, encoding='utf-8')
